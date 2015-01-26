@@ -1,7 +1,11 @@
 <html>
 <!--  http://www.codeproject.com/Articles/693841/Making-Dashboards-with-Dc-js-Part-Using-Crossfil -->
 <head>
+
 <script type="text/javascript" src="https://rawgithub.com/NickQiZhu/dc.js/master/web/js/crossfilter.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
 
 <script type="text/javascript">
 function print_filter(filter){
@@ -17,54 +21,35 @@ function print_filter(filter){
 
 <script type="text/javascript">
 
+// chart 
+google.load('visualization', '1.0', {'packages':['corechart']});
+// Set a callback to run when the Google Visualization API is loaded.
+google.setOnLoadCallback(doEverything);
+
+
+function doEverything() {
+
+
 var data_i = [
   {Home: "1", Box: "1", Channel:"1", Start:"2014-01-01T10:00:00Z", Duration: 10, demo1: "X"},
-  {Home: "2", Box: "1", Channel:"1", Start:"2014-01-01T11:00:00Z", Duration: 10, demo1: "X"},
+  {Home: "2", Box: "1", Channel:"1", Start:"2014-01-01T10:00:05Z", Duration: 10, demo1: "X"},
  ]; 
 
    // Expand the input into second level data
    var secondData = [];
-   for (second = 0; second< 60*60*26; second++) {
-            statement[second] = 0'
-   } 
+//   for (second = 0; second< 60*60*26; second++) {            statement[second] = 0;  } 
    
 
     for (i in data_i) {
         //console.log("Debug:" + data_i[i].Start);
         for(j=0; j<data_i[i].Duration +1; j++) {
-            statement = data_i[i];
+            var statement = jQuery.extend( true, {}, data_i[i] );
             statement["second"]= new Date(new Date(statement.Start).getTime() + j*1000);
             //console.log(JSON.stringify(statement));
             secondData.push(statement);
         }
 
     }
-
-    secondData = [
-    {"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:10.000Z"},
-	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:11.000Z"},
-	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:12.000Z"},
-	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:13.000Z"},
-	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:14.000Z"},
-	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:15.000Z"},
-	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:16.000Z"},
-	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:17.000Z"},
-	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:18.000Z"},
-	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:19.000Z"},
-	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:20.000Z"},
-	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:15.000Z"},
-	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:16.000Z"},
-	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:17.000Z"},
-	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:18.000Z"},
-	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:19.000Z"},
-	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:20.000Z"},
-	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:21.000Z"},
-	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:22.000Z"},
-	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:23.000Z"},
-	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:24.000Z"},
-	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:25.000Z"}
-    ]
-
     var ndx = crossfilter(secondData);
 
     // Example filtering
@@ -78,28 +63,53 @@ var data_i = [
     //print_filter("timeDim"); 
 
     var dimension = ndx.dimension(function(d) {
-        var re = new Date(d.second).getSeconds();
-        console.log ("SEC = "+ re);
+        var re = d.second;
+        //console.log ("SEC = "+ re);
         return re;
         }
     );
     
-    var n = dimension.group().reduceSum(function(d) { 
-            var re = new Date(d.second).getSeconds();
-            console.log ("SEC = "+ re);
-            return re;
-            }
-        );
-        var a = n.top(100);
-    for (x in a) {
-        console.log(a[0].key + ":" + a[0].value);
-    }
+    var n = dimension.group().reduceSum(function(d) { return 1;} );
+    var a = n.top(100);
     
+    var dd1 = new google.visualization.DataTable();
+    dd1.addColumn('string', 'Time');
+    dd1.addColumn('number', 'TTV');
+
+
+    for (x in a) {
+        console.log(a[x].key + ":" + a[x].value);
+        dd1.addRow([a[x].key.toDateString(), a[x].value]);
+    }
+
+
+
+/*     var dd1 = google.visualization.arrayToDataTable([
+          ['Task', 'Hours per Day'],
+          ['Work',     11],
+          ['Eat',      2],
+          ['Commute',  2],
+          ['Watch TV', 2],
+          ['Sleep',    7]
+        ]);
+*/
+        var options = {
+          title: 'Company Performance',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart1'));
+        chart.draw(dd1, options);
+
+  }
+        
 </script>
-<title>TT</title>
+<title>chart1</title>
 </head>
 
 <body>
+    <div id="chart1"></div>
 
 </body>
 </html>
