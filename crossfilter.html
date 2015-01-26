@@ -1,0 +1,105 @@
+<html>
+<!--  http://www.codeproject.com/Articles/693841/Making-Dashboards-with-Dc-js-Part-Using-Crossfil -->
+<head>
+<script type="text/javascript" src="https://rawgithub.com/NickQiZhu/dc.js/master/web/js/crossfilter.js"></script>
+
+<script type="text/javascript">
+function print_filter(filter){
+
+	var f=eval(filter);
+  
+	if (typeof(f.length) != "undefined") {}else{}
+	if (typeof(f.top) != "undefined") {f=f.top(Infinity);}else{}
+	if (typeof(f.dimension) != "undefined") {f=f.dimension(function(d) { return "";}).top(Infinity);}else{}
+	console.log(filter+"("+f.length+") = "+JSON.stringify(f).replace("[","[\n\t").replace(/}\,/g,"},\n\t").replace("]","\n]"));
+} 
+</script>
+
+<script type="text/javascript">
+
+var data_i = [
+  {Home: "1", Box: "1", Channel:"1", Start:"2014-01-01T10:00:00Z", Duration: 10, demo1: "X"},
+  {Home: "2", Box: "1", Channel:"1", Start:"2014-01-01T11:00:00Z", Duration: 10, demo1: "X"},
+ ]; 
+
+   // Expand the input into second level data
+   var secondData = [];
+   for (second = 0; second< 60*60*26; second++) {
+            statement[second] = 0'
+   } 
+   
+
+    for (i in data_i) {
+        //console.log("Debug:" + data_i[i].Start);
+        for(j=0; j<data_i[i].Duration +1; j++) {
+            statement = data_i[i];
+            statement["second"]= new Date(new Date(statement.Start).getTime() + j*1000);
+            //console.log(JSON.stringify(statement));
+            secondData.push(statement);
+        }
+
+    }
+
+    secondData = [
+    {"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:10.000Z"},
+	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:11.000Z"},
+	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:12.000Z"},
+	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:13.000Z"},
+	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:14.000Z"},
+	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:15.000Z"},
+	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:16.000Z"},
+	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:17.000Z"},
+	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:18.000Z"},
+	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:19.000Z"},
+	{"Home":"2","Box":"1","Channel":"1","Start":"2014-01-01T11:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T11:00:20.000Z"},
+	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:15.000Z"},
+	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:16.000Z"},
+	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:17.000Z"},
+	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:18.000Z"},
+	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:19.000Z"},
+	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:20.000Z"},
+	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:21.000Z"},
+	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:22.000Z"},
+	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:23.000Z"},
+	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:24.000Z"},
+	{"Home":"1","Box":"1","Channel":"1","Start":"2014-01-01T10:00:00Z","Duration":10,"demo1":"X","second":"2014-01-01T10:00:25.000Z"}
+    ]
+
+    var ndx = crossfilter(secondData);
+
+    // Example filtering
+/*
+    var channelDim  = ndx.dimension(function(d) {return d.Channel;});
+    var ch_filter = channelDim.filter("1"); 
+    print_filter("ch_filter"); 
+*/
+    
+    //var timeDim  = ndx.dimension(function(d) {return d.second.getSeconds();});
+    //print_filter("timeDim"); 
+
+    var dimension = ndx.dimension(function(d) {
+        var re = new Date(d.second).getSeconds();
+        console.log ("SEC = "+ re);
+        return re;
+        }
+    );
+    
+    var n = dimension.group().reduceSum(function(d) { 
+            var re = new Date(d.second).getSeconds();
+            console.log ("SEC = "+ re);
+            return re;
+            }
+        );
+        var a = n.top(100);
+    for (x in a) {
+        console.log(a[0].key + ":" + a[0].value);
+    }
+    
+</script>
+<title>TT</title>
+</head>
+
+<body>
+
+</body>
+</html>
