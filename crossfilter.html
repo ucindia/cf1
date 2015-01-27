@@ -5,9 +5,9 @@
 <script type="text/javascript" src="https://rawgithub.com/NickQiZhu/dc.js/master/web/js/crossfilter.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-
-
 <script type="text/javascript">
+  
+
 function print_filter(filter){
 
 	var f=eval(filter);
@@ -31,16 +31,15 @@ function doEverything() {
 
 
 var data_i = [
-  {Home: "1", Box: "1", Channel:"1", Start:"2014-01-01T10:00:00Z", Duration: 10, demo1: "X"},
-  {Home: "2", Box: "1", Channel:"1", Start:"2014-01-01T10:00:05Z", Duration: 10, demo1: "X"},
+  {Home: "4", Box: "1", Channel:"1", Start:"2014-01-01T10:00:00Z", Duration: 1, demo1: "X"},
+  {Home: "5", Box: "1", Channel:"1", Start:"2014-01-01T10:00:00Z", Duration: 1, demo1: "X"},
+  {Home: "6", Box: "1", Channel:"1", Start:"2014-01-01T10:00:30Z", Duration: 1, demo1: "X"},
+  {Home: "7", Box: "1", Channel:"1", Start:"2014-01-01T10:00:30Z", Duration: 1, demo1: "X"},
  ]; 
 
    // Expand the input into second level data
    var secondData = [];
-//   for (second = 0; second< 60*60*26; second++) {            statement[second] = 0;  } 
-   
-
-    for (i in data_i) {
+   for (i in data_i) {
         //console.log("Debug:" + data_i[i].Start);
         for(j=0; j<data_i[i].Duration +1; j++) {
             var statement = jQuery.extend( true, {}, data_i[i] );
@@ -52,34 +51,32 @@ var data_i = [
     }
     var ndx = crossfilter(secondData);
 
-    // Example filtering
-/*
+    // Example filtering - Channel=1
     var channelDim  = ndx.dimension(function(d) {return d.Channel;});
     var ch_filter = channelDim.filter("1"); 
-    print_filter("ch_filter"); 
-*/
+    //print_filter("channelDim"); 
     
     //var timeDim  = ndx.dimension(function(d) {return d.second.getSeconds();});
     //print_filter("timeDim"); 
-
+    
     var dimension = ndx.dimension(function(d) {
         var re = d.second;
-        //console.log ("SEC = "+ re);
+        console.log ("SEC = " + d.second + " ==> " + re);
         return re;
         }
     );
-    
+     
     var n = dimension.group().reduceSum(function(d) { return 1;} );
     var a = n.top(100);
     
     var dd1 = new google.visualization.DataTable();
-    dd1.addColumn('string', 'Time');
+    dd1.addColumn('date', 'Time');
     dd1.addColumn('number', 'TTV');
 
 
     for (x in a) {
         console.log(a[x].key + ":" + a[x].value);
-        dd1.addRow([a[x].key.toDateString(), a[x].value]);
+        dd1.addRow([a[x].key, a[x].value]);
     }
 
 
@@ -94,12 +91,13 @@ var data_i = [
         ]);
 */
         var options = {
-          title: 'Company Performance',
-          curveType: 'function',
+          title: 'TTV',
+          curveType: 'none' /*function*/,
           legend: { position: 'bottom' }
         };
 
         var chart = new google.visualization.LineChart(document.getElementById('chart1'));
+        dd1.sort([{column: 0}]);
         chart.draw(dd1, options);
 
   }
