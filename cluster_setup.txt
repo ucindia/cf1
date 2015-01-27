@@ -1,0 +1,239 @@
+hadoop]$ ssh uday.chitragar@172.29.0.103 # Test ssh-key login
+hadoop]$ ./prod/bin/hadoop namenode -format # Format Namenode
+hadoop]$ ./prod/bin/start-dfs.sh # Start DFS
+hadoop]$ ./prod/bin/start-mapred.sh
+
+Alternatively - this ./prod/bin/start-all.sh works better
+## TEST
+./hadoop/prod/bin/hadoop dfs -mkdir uc.test
+./hadoop dfs -copyFromLocal ~/workspace/mapreduce/data.txt uc.test
+
+# Test a Mapred
+./bin/hadoop jar contrib/streaming/hadoop-streaming-1.1.1.jar -file ~/workspace/mapreduce/mapper.py -mapper ~/workspace/mapreduce/mapper.py -file ~/workspace
+/mapreduce/reducer.py -reducer ~/workspace/mapreduce/reducer.py -input uc.test/data.txt -output uc.test.res
+/DATA/hadoop/prod/bin/hadoop dfs -copyToLocal uc.test.res/part-00000 ~/workspace/mapreduce/result_from_hd
+
+
+# Start the job tracker
+./prod/bin/start-mapred.sh
+
+
+### TEST 2
+bin/start-dfs.sh
+bin/start-mapred.sh
+
+/DATA/hadoop/prod/bin/hadoop dfs -mkdir uc.test
+/DATA/hadoop/prod/bin/hadoop dfs -copyFromLocal \
+     /home/uday.chitragar/workspace/mapreduce/data.txt\
+     uc.test
+
+cd prod
+/DATA/hadoop/prod/bin/hadoop jar contrib/streaming/hadoop-streaming-1.1.1.jar \
+-file ~/workspace/mapreduce/mapper.py -mapper ~/workspace/mapreduce/mapper.py \
+-file ~/workspace/mapreduce/reducer.py -reducer \
+~/workspace/mapreduce/reducer.py -input uc.test/data.txt \
+-output uc.test.res2
+
+/DATA/hadoop/prod/bin/hadoop dfs -ls uc.test.res2
+
+
+http://172.29.4.70:50070/dfshealth.jsp
+http://172.29.4.70:50030/jobtracker.jsp
+http://172.29.4.70:50030/jobdetails.jsp?jobid=job_201302191402_0002&refresh=0
+
+## USeful tips
+http://hadoop.apache.org/docs/r0.19.1/streaming.html#Specifying+Additional+Configuration+Variables+for+Jobs
+http://wiki.apache.org/hadoop/FAQ
+https://cwiki.apache.org/Hive/gettingstarted.html#GettingStarted-RunningHive
+
+
+  243  /DATA/hadoop/prod/bin/hadoop fsck -blocks
+  244  /DATA/hadoop/prod/bin/hadoop balancer
+ps -ef |  sed 's/.*hadoop.* org.apache\(.*\)$/\1/' | grep hadoop
+
+
+# Sending additional data
+/DATA/hadoop/prod/bin/hadoop jar
+prod/contrib/streaming/hadoop-streaming-1.1.1.jar -file /DATA/io/mapper.py
+-mapper "/DATA/io/mapper.py -snapshot_dir <>" -file /DATA/io/reducer.py -reducer
+/DATA/io/reducer.py -input uc.test/input.txt -output uc.test.res -file /DATA/io/args.txt
+=> The file args.txt is available to mapper (probably reducer - not tested) in the same directory as that of mapper itself.
+
+
+# Kill job
+./prod/bin/hadoop job -kill job_201302261012_0015
+
+
+############## HIVE ################
+## Install
+cp hive/conf/hive-env.sh.template hive/conf/hive-env.sh
+Uncomment HADOOP_HOME (Ensure it is correct)
+
+## Example run: ##
+create table file(line string);
+load data local inpath '/home/uday.chitragar/workspace/mapreduce/data.txt'
+OVERWRITE INTO TABLE file;
+create table res(word string, count int) ROW FORMAT DELIMITED FIELDS
+TERMINATED BY '\t';
+INSERT OVERWRITE TABLE res select TRANSFORM(line) USING
+'/home/uday.chitragar/workspace/mapreduce/mapper.py' AS (word, count) from
+file;
+
+## Check res
+select sum(count) from res where word='The';
+
+## SQOOP ########################################
+- cp ojdbc6.jar sqoop/lib/ (got it from DASM bundles)
+or from my own installation: cp /opt/sqldeveloper/jdbc/lib/ojdbc6.jar
+sqoop/lib/ -i
+
+
+
+./sqoop/bin/sqoop import --hive-import --verbose --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com"
+--table FILE_DOWNLOAD --username DASM_APPS --password dasm8dd3
+
+./sqoop/bin/sqoop import --hive-import --verbose \
+ --hive-import \
+--connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com" \
+--table HOUSEHOLD \
+--username DASM_APPS \
+--password dasm8dd3 \
+--split-by HOUSEHOLD_ID
+#--where 'HOUSEHOLD_ID<=1000000'
+
+# Commands to populate universe
+  265  ./sqoop/bin/sqoop create-hive-table --connect
+jdbc:oracle:thin@192.168.141.57:1521/DASMQC.kmawc.com --table household
+--username DASM_APPS --password dasm8dd3
+  266  ./sqoop/bin/sqoop create-hive-table --connect
+jdbc:oracle:thin@192.168.141.57:1521/DASMQC --table household --username
+DASM_APPS --password dasm8dd3
+  267* ./sqoop/bin/sqoop create-hive-table --connect
+"jdbc:oracle:thin@192.168.141.57:1521/DASMQC"
+  268  ./sqoop/bin/sqoop create-hive-table --connect
+jdbc:oracle:thin@192.168.141.57:1521/DASMQC --table household
+  269  ./sqoop/bin/sqoop create-hive-table --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC" --table
+household
+  270  ./sqoop/bin/sqoop create-hive-table --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com"
+--table household
+  274  ./sqoop/bin/sqoop import --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com"
+--table household
+  275  ./sqoop/bin/sqoop import --verbose --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com"
+--table household
+  276  ./sqoop/bin/sqoop import --verbose --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com"
+--table HOUSEHOLD
+  277  ./sqoop/bin/sqoop import --hive-import --verbose --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com"
+--table HOUSEHOLD
+  278  ./sqoop/bin/sqoop import --hive-import --verbose --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com"
+--table HOUSEHOLD --username DASM_APPS --password dasm8dd3
+  280  ./sqoop/bin/sqoop import --hive-import --verbose --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com"
+--table FILE_DOWNLOAD --username DASM_APPS --password dasm8dd3
+  283  ./sqoop/bin/sqoop import --hive-import --verbose --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com"
+--table HOUSEHOLD --username DASM_APPS --password dasm8dd3 --query 'SELECT *
+FROM HOUSEHOLD WHERE HOUOSEHOLD_ID<=1000000' --split-by HOUOSEHOLD_ID
+  284  ./sqoop/bin/sqoop import --hive-import --verbose --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com"
+--username DASM_APPS --password dasm8dd3 --query 'SELECT * FROM HOUSEHOLD
+WHERE HOUOSEHOLD_ID<=1000000' --split-by HOUOSEHOLD_ID
+  285  ./sqoop/bin/sqoop import --hive-import --verbose --connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com"
+--username DASM_APPS --password dasm8dd3 --query 'SELECT * FROM HOUSEHOLD
+WHERE HOUOSEHOLD_ID<=1000000' --split-by HOUOSEHOLD_ID -target-dir
+/DATA/io/HOUSEHOLD
+
+./sqoop/bin/sqoop import --hive-import --verbose \
+ --hive-import \
+--connect
+"jdbc:oracle:thin:DASM_APPS/dasm8dd3@192.168.141.57:1521/DASMQC.kmawc.com" \
+#--table HOUSEHOLD \
+--table ATTRIBUTE \
+#--table VALUE \
+#--table HOUSEHOLD_VALUE \
+--username DASM_APPS \
+--password dasm8dd3 \
+--split-by HOUSEHOLD_ID
+
+
+## Rohit PC: 172.29.4.69
+
+
+# Install new site
+1. Setup keys with master
+2. mkdir /DATA/ owner uday.chitragar
+3. Extract hadoop and create a link prod under directory /DATA/hadoop/
+4. mkdir -p /DATA/hadoop/HADOOP_DATA_DIR/name; mkdir -p /DATA/hadoop/HADOOP_DATA_DIR/data
+5. From master:
+     scp hdfs-site.xml core-site.xml masters slaves uday.chitragar@172.29.4.69://DATA/hadoop/prod/conf/
+6. export JAVA_HOME=/usr/java/jre1.6.0_24 ==> Add this to profile
+7. /DATA/hadoop/prod/bin/hadoop namenode -format
+
+Done !
+
+
+Cleanujp:
+ 1034  rm -fr HADOOP_DATA_DIR/name/*
+ 1035  rm -fr HADOOP_DATA_DIR/data/*
+ 1036  rm -fr HADOOP_DATA_DIR/local/*
+
+### Mongo
+Install: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-linux/
+Run using:
+/DATA/hadoop/mongo/bin/mongod -f /DATA/hadoop/conf_mongo/mongo.cfg
+
+cat DVR_ADDR_ATTR_FULL_20130730.DAT  | awk 'BEGIN{ header=1 } { if (header == 0){ print $0}} /DEMOGRAPHICS/{ header = 0} ' > test.DAT
+zcat DVR_ADDR_ATTR_FULL_20130730.DAT.gz | head | cut -c151-155 | uniq
+
+Use mongoimport to import.
+It apperently requires 64 version to actually do usefule things :(
+
+Example session:
+
+$ /DATA/hadoop/mongo/bin/mongo
+> db.icd6.count( {_id: {$exists: true} })
+835823
+
+> db.icd6.count( {_id: {$exists: true, GOLDENSTB: 'Y'} })
+
+Cassandra
+--------------
+* Install using http://wiki.apache.org/cassandra/GettingStarted
+* You need Python 2.7 - downloaded and compiled
+* Create a link python2.7 and put it in the path for cqlsh to find. That is.
+
+export PATH=/DATA/Python-2.7.5/:$PATH
+
+start: /DATA/hadoop/cassandra/bin/cassandra
+stop: pkill -f CassandraDaemon
+
+cqlsh> CREATE KEYSPACE UC
+   ... WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' :1 };
+
+cqlsh> USE UC;
+
+cqlsh:uc> create table univ (ID text,ACTIVE  text,RECMODEL  text,RECMAKE
+text,RECTYPE  text,GOLDENSTB  text,x1013  text,ZIP  text,STATE
+text,SVCPKGTIER  text,RECVCNT  text,DMA  text PRIMARY KEY,x1112  text,x2050
+text,x2051  text,x2052  text,x2053  text,x2054  text,x2055  text,x2056
+text,x2057  text,x2058  text,x2060  text,x2061  text,x2065  text,x2072
+text,x2074  text,x2075  text,x2076  text,x2080  text,x2081  text,x2083
+text,x2087  text,x2088  text,x2089  text,x2090  text,x2091  text,x2092
+text,x2093  text,x2094  text,x2095  text,x3004  text,x3006  text,x3007
+text,x3008  text,x3009  text,x3010  text,x3011  text,x3012  text,x3013
+text,x3014  text,x3015  text,x3016  text,x3017  text,x3018  text,x3019
+text,x3020  text,x3021  text,x3022  text,x3023  text,x3024  text,x3025
+text,x3026  text,x3027  text,x3028  text,x3029  text,x3030  text,x3031
+text,x3032  text,x3033  text,x3034 text);
+cqlsh:uc> copy univ from '/DATA/input/parsed2.dat';
+
+cqlsh:uc> SELECT COUNT(1) FROM univ LIMIT 10000000;
