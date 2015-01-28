@@ -1,0 +1,34 @@
+# 
+1. Download pre-built binary (Example: mysql-5.6.22-linux-glibc2.5-i686)
+2. Extract
+3. Install custom dir:
+    ./scripts/mysql_install_db --datadir=/<dir>/mysql_database/data
+4. Start: I am using 8080 becuase it is open
+    ./bin/mysqld \
+         --basedir=/<dir>/mysql-5.6.22-linux-glibc2.5-i686/ \
+         --datadir=/<dir>/mysql_database/data \
+         --log-error=/<dir>/mysql_database/mysql.err \
+         --pid-file=/<dir>/mysql_database/mysql.pid \
+         --socket=/<dir>/mysql_database/thesock --port=8080
+5. Stop
+   ./bin/mysqladmin -uroot  --socket=/<dir>/mysql_database/thesock shutdown
+   
+
+# Connect
+./bin/mysql -uroot --socket=/<dir>/mysql_database/thesock
+
+mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%';
+mysql> FLUSH PRIVILEGES;
+mysql> commit;
+
+# Partition
+mysql> CREATE TABLE `vc` (
+  `device_report` int(11) DEFAULT NULL,
+  `channel` int(11) DEFAULT NULL,
+  `start_time` datetime DEFAULT NULL,
+  `id` int(11) DEFAULT NULL
+) PARTITION BY HASH ( MONTH(start_time)) PARTITIONS;
+
+mysql> select partition_name, partition_expression, tablespace_name, table_rows from 
+   information_schema.partitions where table_name ='vc';
+  
